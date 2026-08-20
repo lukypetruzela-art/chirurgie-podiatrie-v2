@@ -60,3 +60,54 @@
     });
   }
 })();
+
+// Generic lightbox gallery for figure images (works across all pages)
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    var imgs = Array.prototype.slice.call(document.querySelectorAll('.figure-img, .fmt-slide img'));
+    if(!imgs.length) return;
+
+    var lb = document.createElement('div');
+    lb.className = 'lightbox';
+    lb.id = 'siteLightbox';
+    lb.innerHTML =
+      '<button class="lightbox-close" aria-label="Zavřít">✕</button>' +
+      '<button class="lightbox-nav lightbox-prev" aria-label="Předchozí fotka">‹</button>' +
+      '<div class="lightbox-img-wrap"><img alt=""><div class="lightbox-caption"></div></div>' +
+      '<button class="lightbox-nav lightbox-next" aria-label="Další fotka">›</button>';
+    document.body.appendChild(lb);
+
+    var lbImg = lb.querySelector('.lightbox-img-wrap img');
+    var lbCaption = lb.querySelector('.lightbox-caption');
+    var idx = 0;
+
+    function show(i){
+      idx = (i + imgs.length) % imgs.length;
+      var img = imgs[idx];
+      var fig = img.closest('figure');
+      var cap = fig ? fig.querySelector('figcaption') : null;
+      lbImg.src = img.currentSrc || img.src;
+      lbImg.alt = img.alt || '';
+      lbCaption.textContent = cap ? cap.textContent : (img.alt || '');
+    }
+
+    imgs.forEach(function(img, i){
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function(){
+        show(i);
+        lb.classList.add('open');
+      });
+    });
+
+    lb.querySelector('.lightbox-close').addEventListener('click', function(){ lb.classList.remove('open'); });
+    lb.querySelector('.lightbox-prev').addEventListener('click', function(){ show(idx - 1); });
+    lb.querySelector('.lightbox-next').addEventListener('click', function(){ show(idx + 1); });
+    lb.addEventListener('click', function(e){ if(e.target === lb) lb.classList.remove('open'); });
+    document.addEventListener('keydown', function(e){
+      if(!lb.classList.contains('open')) return;
+      if(e.key === 'Escape') lb.classList.remove('open');
+      if(e.key === 'ArrowLeft') show(idx - 1);
+      if(e.key === 'ArrowRight') show(idx + 1);
+    });
+  });
+})();
